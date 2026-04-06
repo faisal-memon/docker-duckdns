@@ -21,10 +21,12 @@ case "$UPDATE_INTERVAL" in
         echo "Update interval must be between 1-24 hours"
         exit 1
     fi
-    HOURS="*/$HOURS"
-
-    # We want a single run per selected hour, with the template's jitter handling
-    # the exact seconds.
+    # Cron hour field is 0-23, so 24h must be normalized to daily at midnight.
+    if (( HOURS == 24 )); then
+        HOURS="0"
+    else
+        HOURS="*/$HOURS"
+    fi
     MINUTES="0"
     ;;
   *)
@@ -33,9 +35,13 @@ case "$UPDATE_INTERVAL" in
         echo "Update interval must be between 5-60 minutes"
         exit 1
     fi
-    MINUTES="*/$MINUTES"
-
     HOURS="*"
+    # Cron minute field is 0-59, so 60m must be normalized to top of each hour.
+    if (( MINUTES == 60 )); then
+        MINUTES="0"
+    else
+        MINUTES="*/$MINUTES"
+    fi
     ;;
 esac
 
